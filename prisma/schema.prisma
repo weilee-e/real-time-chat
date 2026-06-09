@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+model User {
+  userId Int @id @default(autoincrement()) @map("user_id")
+  email String @unique
+  password String
+  RoomParticipants RoomParticipants[]
+  Message Message[]
+  Room Room[]
+  @@map("user")
+}
+
+model Room {
+  roomId Int @id @map("room_id") @default(autoincrement())
+  createdAt DateTime @map("created_at") @db.Timestamptz() @default(now())
+  createdById Int @map("created_by_id")
+  createdBy User @relation(fields: [createdById], references: [userId])
+  RoomParticipants RoomParticipants[]
+  Message Message[]
+  @@map("room")
+}
+
+model Message {
+  messageId Int @id @map("message_id") @default(autoincrement())
+  text String
+  writeAt DateTime @map("write_at") @db.Timestamptz() @default(now())
+  
+  authorId Int @map("author_id")
+  user User @relation(fields: [authorId], references: [userId])
+  roomId Int @map("room_id")
+  room Room @relation(fields: [roomId], references: [roomId])
+
+  @@map("message")
+}
+
+model RoomParticipants {
+  userIdP Int @map("user_id_p")
+  roomIdP Int @map("room_id_p")
+  user User @relation(fields: [userIdP], references: [userId])
+  room Room @relation(fields: [roomIdP], references: [roomId])
+
+  createdAt DateTime @db.Timestamptz() @default(now()) @map("created_at")
+  
+  @@id([userIdP, roomIdP])
+  @@map("room_participants")
+}
