@@ -51,4 +51,14 @@ export class RoomService {
 
     return data;
   }
+
+  async getRoomById(roomId: number) {
+    return this.prisma.room.findFirst({ where: { roomId } });
+  }
+
+  async isParticipant(userId: number, roomId: number) {
+    return this.prisma.roomParticipants.findFirst({
+      where: { userIdP: userId, roomIdP: roomId },
+    });
+  }
 }
